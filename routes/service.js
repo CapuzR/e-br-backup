@@ -18,6 +18,12 @@ const createTMActor = async (canisterId, idl, options)=> {
     });
 };
 
+// const _getTMPrincipal = async () => {
+//     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
+//         agentOptions: { host: "http://127.0.0.1:8000", fetch },
+//     });
+// };
+
 const _startMatch = async (externalMatchId) => {
 
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
@@ -79,6 +85,10 @@ const _endMatch = async (externalMatchId, stats) => {
 
 };
 
+// exports.test = async function (req, res, next) {
+//     res.send("Ok");
+// };
+
 exports.startMatch = async function (req, res, next) {
     console.log(req.body);
     await _startMatch(req.body.externalMatchID);
@@ -86,10 +96,15 @@ exports.startMatch = async function (req, res, next) {
     res.send("Ok");
 };
 
+// exports.getTMPrincipal = async function (req, res, next) {
+//     await _getTMPrincipal();
+// };
+
 exports.endMatch = async function (req, res, next) {
     console.log(req.body);
 
     const stats = JSON.parse(req.body.stats);
+    console.log(stats);
 
     await _endMatch(req.body.externalMatchID, stats);
 
