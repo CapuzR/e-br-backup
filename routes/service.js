@@ -1,7 +1,9 @@
 const  IdlFactory = require('./IDLs/bountyRushService.did.js'); 
 const  Agent = require('@dfinity/agent'); 
+const  Principal = require('@dfinity/principal'); 
 const  Identity = require('./Utils/identities.js'); 
 const  fetch = require('node-fetch'); 
+// const { stat } = require('fs');
 
 const bRCanId = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
@@ -54,14 +56,29 @@ const _startMatch = async (externalMatchId) => {
     };
 };
 
+const filterStats = (stats)=> {
+    var newStats = stats;
+    for (let i in stats) {
+        if (stats[i].principal == '') {
+            newStats = stats.slice(0, i-1).concat(stats.slice(i+1, stats.length-1));
+        } else {
+            newStats[i].principal = Principal.Principal.fromText(stats[i].principal);
+        };
+    };
+
+    return newStats;
+};
+
 const _endMatch = async (externalMatchId, stats) => {
-    const bRService = await createTMActor(bRCanId, idlFactory, {
-        agentOptions: { host: "http://127.0.0.1:8000" },
+    const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
+        agentOptions: { host: "http://127.0.0.1:8000", fetch },
     });
+
+    let filteredStats = filterStats(stats.playerDataStats);
 
     try {
         //TODO: Set to 1 manually, shouldn't be this way.
-        const endMatchRes = await bRService.endMatch(externalMatchId, stats, "1");
+        const endMatchRes = await bRService.endMatch(externalMatchId, filteredStats, 1);
         
         if("err" in endMatchRes) {
             if ("NotAuthorized" in endMatchRes.err) {
@@ -79,7 +96,7 @@ const _endMatch = async (externalMatchId, stats) => {
             return "Ok";
         };
     } catch (e) {
-        console.log(e.messages);
+        console.log(e);
         return "Unexpected error: " + e;
     };
 
@@ -90,7 +107,6 @@ const _endMatch = async (externalMatchId, stats) => {
 // };
 
 exports.startMatch = async function (req, res, next) {
-    console.log(req.body);
     await _startMatch(req.body.externalMatchID);
 
     res.send("Ok");
@@ -101,10 +117,7 @@ exports.startMatch = async function (req, res, next) {
 // };
 
 exports.endMatch = async function (req, res, next) {
-    console.log(req.body);
-
     const stats = JSON.parse(req.body.stats);
-    console.log(stats);
 
     await _endMatch(req.body.externalMatchID, stats);
 
