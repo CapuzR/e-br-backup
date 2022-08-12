@@ -19,6 +19,7 @@ app.all('*', function(req, res, next) {
 
 app.post('/startMatch', service.startMatch);
 app.post('/endMatch', service.endMatch);
+app.post('/matchForcedClose', service.matchForcedClose);
 // app.get('/test', service.getTMPrincipal);
 
 app.set('port', process.env.PORT || 5000);

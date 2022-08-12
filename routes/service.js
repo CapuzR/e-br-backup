@@ -82,8 +82,8 @@ const _endMatch = async (externalMatchId, stats) => {
         
         if("err" in endMatchRes) {
             if ("NotAuthorized" in endMatchRes.err) {
-                console.log("Only admin can start a match.");
-                return "Only admin can start a match.";
+                console.log("Only admin can end a match.");
+                return "Only admin can end a match.";
             } else if ("NonExistentItem" in endMatchRes.err) {
                 console.log("Match or Invoice doesn't exist, please report to team via email: rjcapuz@a3capas.com");
                 return "Match or Invoice doesn't exist, please report to team via email: rjcapuz@a3capas.com";
@@ -99,7 +99,36 @@ const _endMatch = async (externalMatchId, stats) => {
         console.log(e);
         return "Unexpected error: " + e;
     };
+};
 
+const _matchForcedClose = async (externalMatchId) => {
+
+    const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
+        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+    });
+
+    try {
+        const endMatchRes = await bRService.matchForcedClose(externalMatchId);
+        
+        if("err" in endMatchRes) {
+            if ("NotAuthorized" in endMatchRes.err) {
+                console.log("Only TM can forced end a match.");
+                return "Only TM can forced end a match.";
+            } else if ("NonExistentItem" in endMatchRes.err) {
+                console.log("Match doesn't exist.");
+                return "Match doesn't exist.";
+            } else if ("Unknown" in endMatchRes.err) {
+                console.log(endMatchRes.err.Unknown);
+                return endMatchRes.err.Unknown;
+            }
+        } else if ("ok" in endMatchRes) {
+            console.log(endMatchRes.ok);
+            return "Ok";
+        };
+    } catch (e) {
+        console.log(e);
+        return "Unexpected error: " + e;
+    };
 };
 
 // exports.test = async function (req, res, next) {
@@ -107,9 +136,7 @@ const _endMatch = async (externalMatchId, stats) => {
 // };
 
 exports.startMatch = async function (req, res, next) {
-    await _startMatch(req.body.externalMatchID);
-
-    res.send("Ok");
+    res.send(await _startMatch(req.body.externalMatchID));
 };
 
 // exports.getTMPrincipal = async function (req, res, next) {
@@ -118,8 +145,9 @@ exports.startMatch = async function (req, res, next) {
 
 exports.endMatch = async function (req, res, next) {
     const stats = JSON.parse(req.body.stats);
+    res.send(await _endMatch(req.body.externalMatchID, stats));
+};
 
-    await _endMatch(req.body.externalMatchID, stats);
-
-    res.send("Ok");
+exports.matchForcedClose = async function (req, res, next) {
+    res.send(await _matchForcedClose(req.body.externalMatchID));
 };
