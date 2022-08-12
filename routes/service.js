@@ -20,6 +20,19 @@ const createTMActor = async (canisterId, idl, options)=> {
     });
 };
 
+const filterStats = (stats)=> {
+    var newStats = stats;
+    for (let i in stats) {
+        if (stats[i].principal == '') {
+            newStats = stats.slice(0, i-1).concat(stats.slice(i+1, stats.length-1));
+        } else {
+            newStats[i].principal = Principal.Principal.fromText(stats[i].principal);
+        };
+    };
+
+    return newStats;
+};
+
 // const _getTMPrincipal = async () => {
 //     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
 //         agentOptions: { host: "http://127.0.0.1:8000", fetch },
@@ -45,7 +58,10 @@ const _startMatch = async (externalMatchId) => {
             } else if ("Unknown" in startMatchRes.err) {
                 console.log(startMatchRes.err.Unknown);
                 return startMatchRes.err.Unknown;
-            }
+            } else {
+                console.log(startMatchRes.err);
+                return startMatchRes.err;
+            };
         } else if ("ok" in startMatchRes) {
             console.log(startMatchRes.ok);
             return "Ok";
@@ -54,19 +70,6 @@ const _startMatch = async (externalMatchId) => {
         console.log(e);
         return "Unexpected error: " + e;
     };
-};
-
-const filterStats = (stats)=> {
-    var newStats = stats;
-    for (let i in stats) {
-        if (stats[i].principal == '') {
-            newStats = stats.slice(0, i-1).concat(stats.slice(i+1, stats.length-1));
-        } else {
-            newStats[i].principal = Principal.Principal.fromText(stats[i].principal);
-        };
-    };
-
-    return newStats;
 };
 
 const _endMatch = async (externalMatchId, stats) => {
@@ -90,7 +93,10 @@ const _endMatch = async (externalMatchId, stats) => {
             } else if ("Unknown" in endMatchRes.err) {
                 console.log(endMatchRes.err.Unknown);
                 return endMatchRes.err.Unknown;
-            }
+            } else {
+                console.log(endMatchRes.err);
+                unityContext.send("ReactApi", "HandleCallback", endMatchRes.err);
+            };
         } else if ("ok" in endMatchRes) {
             console.log(endMatchRes.ok);
             return "Ok";
@@ -108,23 +114,87 @@ const _matchForcedClose = async (externalMatchId) => {
     });
 
     try {
-        const endMatchRes = await bRService.matchForcedClose(externalMatchId);
+        const matchForcedCloseRes = await bRService.matchForcedClose(externalMatchId);
         
-        if("err" in endMatchRes) {
-            if ("NotAuthorized" in endMatchRes.err) {
+        if("err" in matchForcedCloseRes) {
+            if ("NotAuthorized" in matchForcedCloseRes.err) {
                 console.log("Only TM can forced end a match.");
                 return "Only TM can forced end a match.";
-            } else if ("NonExistentItem" in endMatchRes.err) {
+            } else if ("NonExistentItem" in matchForcedCloseRes.err) {
                 console.log("Match doesn't exist.");
                 return "Match doesn't exist.";
-            } else if ("Unknown" in endMatchRes.err) {
-                console.log(endMatchRes.err.Unknown);
-                return endMatchRes.err.Unknown;
-            }
-        } else if ("ok" in endMatchRes) {
-            console.log(endMatchRes.ok);
+            } else if ("Unknown" in matchForcedCloseRes.err) {
+                console.log(matchForcedCloseRes.err.Unknown);
+                return matchForcedCloseRes.err.Unknown;
+            } else {
+                console.log(matchForcedCloseRes.err);
+                return matchForcedCloseRes.err;
+            };
+        } else if ("ok" in matchForcedCloseRes) {
+            console.log(matchForcedCloseRes.ok);
             return "Ok";
         };
+    } catch (e) {
+        console.log(e);
+        return "Unexpected error: " + e;
+    };
+};
+
+const _forcedExit = async (playerPrincipal, externalMatchId, reason, detail) => {
+
+    var turnInit = "";
+    const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
+        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+    });
+
+    if (detail == 'Banned') {
+        turnInit = {
+            ForcedExit : {
+                text : reason,
+                detail : {
+                  Banned : null
+                }
+            }
+        };
+    } else if (detail == 'LeaveGame') {
+        turnInit = {
+            ForcedExit : {
+                text : reason,
+                detail : {
+                  LeaveGame : null
+                }
+            }
+        };
+    // } else if (detail == 'TimeLimit') {
+    //     turnInit = {
+    //         ForcedExit : {
+    //             text : reason,
+    //             detail : {
+    //             TimeLimit : null
+    //             }
+    //         }
+    //     };
+    }
+    
+    try {
+        const forcedExit = await bRService.forcedExit(playerPrincipal, externalMatchId, turnInit);
+
+        if("err" in forcedExit) {
+            if ("NotAuthorized" in forcedExit.err) {
+                console.log("Only TM can forced end a match.");
+                return "Only TM can forced end a match.";
+            } else if ("NonExistentItem" in forcedExit.err) {
+                console.log("Match doesn't exist.");
+                return "Match doesn't exist.";
+            } else if ("Unknown" in forcedExit.err) {
+                console.log(forcedExit.err.Unknown);
+                return forcedExit.err.Unknown;
+            }
+        } else if ("ok" in forcedExit) {
+            console.log(forcedExit.ok);
+            return "Ok";
+        };
+
     } catch (e) {
         console.log(e);
         return "Unexpected error: " + e;
@@ -150,4 +220,8 @@ exports.endMatch = async function (req, res, next) {
 
 exports.matchForcedClose = async function (req, res, next) {
     res.send(await _matchForcedClose(req.body.externalMatchID));
+};
+
+exports.forcedExit = async function (req, res, next) {
+    res.send(await _forcedExit(req.body.playerPrincipal, req.body.externalMatchID, req.body.reasonText, req.body.reasonDetail));
 };
