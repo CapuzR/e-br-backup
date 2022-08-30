@@ -12,7 +12,7 @@ app.use(methodOverride());      // simulate DELETE and PUT
 // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
 app.disable('x-powered-by');
 app.all('*', function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1");
+    // res.header("Access-Control-Allow-Origin", "http://127.0.0.1");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     next();
 });
