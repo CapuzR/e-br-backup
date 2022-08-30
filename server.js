@@ -3,6 +3,8 @@ var express = require('express'),
     methodOverride  = require('method-override'),
     service        = require('./routes/service.js'),
     app = express();
+    
+var cors = require('cors')
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
