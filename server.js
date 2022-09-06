@@ -26,7 +26,7 @@ app.post('/matchForcedClose', service.matchForcedClose);
 app.post('/forcedExit', service.forcedExit);
 app.get('/test', service.test);
 
-app.set('port', process.env.PORT || 8000);
+app.set('port', process.env.PORT || 5000);
 
 app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));

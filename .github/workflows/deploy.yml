@@ -42,7 +42,7 @@ jobs:
         passphrase: ${{ secrets.DIGITAL_OCEAN_PASSPHRASE }}
         envs: GIT_USERNAME, GITHUB_TOKEN
         script: |
-          docker stop $(docker ps -a -q)
+          docker stop brnodeserver
           docker login docker.pkg.github.com -u $GIT_USERNAME -p $GITHUB_TOKEN
           docker pull docker.pkg.github.com/capuzr/brnodeserver/build:latest
-          docker run -itd --name brnodeserver -p 80:8000 docker.pkg.github.com/capuzr/brnodeserver/build:latest
+          docker run -itd --name brnodeserver -p 80:5000 docker.pkg.github.com/capuzr/brnodeserver/build:latest

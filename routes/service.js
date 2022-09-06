@@ -168,6 +168,7 @@ const _startMatch = async (externalMatchId) => {
             };
         } else if ("ok" in startMatchRes) {
             console.log(startMatchRes.ok);
+            // return "err";
             return "Ok";
         };
     } catch (e) {
@@ -180,12 +181,17 @@ const _endMatch = async (externalMatchId, stats) => {
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
         agentOptions: { host: "http://127.0.0.1:8000", fetch },
     });
+    console.log("endMatch nodejs after Actor creation");
+    console.log(bRService);
 
     let filteredStats = filterStats(stats.playerDataStats);
 
+    console.log("filteredStats", filteredStats);
     try {
         //TODO: Set to 1 manually, shouldn't be this way.
         const endMatchRes = await bRService.endMatch(externalMatchId, filteredStats, 1);
+        console.log("Pasó bRService");
+        console.log("endMatchRes", endMatchRes);
         
         if("err" in endMatchRes) {
             if ("NotAuthorized" in endMatchRes.err) {
@@ -211,14 +217,23 @@ const _endMatch = async (externalMatchId, stats) => {
     };
 };
 
-const _matchForcedClose = async (externalMatchId) => {
-
+const _matchForcedClose = async (externalMatchId, reason) => {
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
         agentOptions: { host: "http://127.0.0.1:8000", fetch },
     });
+    
+    turnInit = {
+        ForcedExit : {
+            text : reason,
+            detail : {
+                MatchClosed : null
+            }
+        }
+    };
 
     try {
-        const matchForcedCloseRes = await bRService.matchForcedClose(externalMatchId);
+        const matchForcedCloseRes = await bRService.matchForcedClose(externalMatchId, turnInit);
+        console.log("matchForcedCloseRes", matchForcedCloseRes);
         
         if("err" in matchForcedCloseRes) {
             if ("NotAuthorized" in matchForcedCloseRes.err) {
@@ -246,6 +261,10 @@ const _matchForcedClose = async (externalMatchId) => {
 
 const _forcedExit = async (playerPrincipal, externalMatchId, reason, detail) => {
 
+    if (!externalMatchId) {
+        return "No externalMatchID received.";
+    };
+
     var turnInit = "";
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
         agentOptions: { host: "http://127.0.0.1:8000", fetch },
@@ -269,19 +288,19 @@ const _forcedExit = async (playerPrincipal, externalMatchId, reason, detail) => 
                 }
             }
         };
-    // } else if (detail == 'TimeLimit') {
-    //     turnInit = {
-    //         ForcedExit : {
-    //             text : reason,
-    //             detail : {
-    //             TimeLimit : null
-    //             }
-    //         }
-    //     };
-    }
+    } else if (detail == 'TimeLimit') {
+        turnInit = {
+            ForcedExit : {
+                text : reason,
+                detail : {
+                    TimeLimit : null
+                }
+            }
+        };
+    };
     
     try {
-        const forcedExit = await bRService.forcedExit(playerPrincipal, externalMatchId, turnInit);
+        const forcedExit = await bRService.forcedExit(Principal.Principal.fromText(playerPrincipal), externalMatchId, turnInit);
 
         if("err" in forcedExit) {
             if ("NotAuthorized" in forcedExit.err) {
@@ -310,7 +329,12 @@ exports.test = async function (req, res, next) {
 };
 
 exports.startMatch = async function (req, res, next) {
-    res.send(await _startMatch(req.body.externalMatchID));
+    let startMatchRes = await _startMatch(req.body.externalMatchID)
+    if (startMatchRes != "Ok") {
+        res.status(500).send(startMatchRes);
+    } else {
+        res.status(200).send(startMatchRes);
+    };
 };
 
 // exports.getTMPrincipal = async function (req, res, next) {
@@ -323,9 +347,11 @@ exports.endMatch = async function (req, res, next) {
 };
 
 exports.matchForcedClose = async function (req, res, next) {
-    res.send(await _matchForcedClose(req.body.externalMatchID));
+    console.log("MatchForcedClose");
+    res.send(await _matchForcedClose(req.body.externalMatchID, req.body.reason));
 };
 
 exports.forcedExit = async function (req, res, next) {
-    res.send(await _forcedExit(req.body.playerPrincipal, req.body.externalMatchID, req.body.reasonText, req.body.reasonDetail));
+    // res.send(await _forcedExit(req.body.playerPrincipal, req.body.externalMatchID, req.body.reasonText, req.body.reasonDetail));
+    res.send(await _forcedExit(req.body.playerPrincipal, req.body.externalMatchID, req.body.reason, req.body.detail));
 };

@@ -15,7 +15,7 @@ RUN npm install
 # RUN npm config set python /usr/bin/python
 # RUN apk --no-cache add --virtual builds-deps build-base python && npm install && apk del builds-deps
 COPY . ./
-EXPOSE 8000
+EXPOSE 5000
 CMD ["npm", "start"]
 # RUN npm run start
 
