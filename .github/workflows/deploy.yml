@@ -43,6 +43,7 @@ jobs:
         envs: GIT_USERNAME, GITHUB_TOKEN
         script: |
           docker stop brnodeserver
+          docker rm brnodeserver
           docker login docker.pkg.github.com -u $GIT_USERNAME -p $GITHUB_TOKEN
           docker pull docker.pkg.github.com/capuzr/brnodeserver/build:latest
           docker run -itd --name brnodeserver -p 80:5000 docker.pkg.github.com/capuzr/brnodeserver/build:latest
