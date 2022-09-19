@@ -38,6 +38,8 @@ jobs:
       with:
         host: ${{ secrets.DIGITAL_OCEAN_IP }}
         username: ${{ secrets.DIGITAL_OCEAN_USERNAME }}
+        key: ${{ secrets.DIGITAL_OCEAN_KEY }}
+        passphrase: ${{ secrets.DIGITAL_OCEAN_PASSPHRASE }}
         envs: GIT_USERNAME, GITHUB_TOKEN
         script: |
           docker stop brnodeserver
