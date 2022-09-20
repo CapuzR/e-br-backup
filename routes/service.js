@@ -5,9 +5,14 @@ const  Identity = require('./Utils/identities.js');
 const fetch = (...args) =>
 import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
+const network =
+process.env.DFX_NETWORK ||
+(process.env.NODE_ENV === "production" ? "ic" : "local");
+const bRCanId = network != "ic" ? "rrkah-fqaaa-aaaaa-aaaaq-cai" : "x6h7n-bqaaa-aaaan-qajxq-cai";
+const host = network != "ic" ? "http://localhost:8000" : "https://mainnet.dfinity.network";
 
 
-const bRCanId = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+// const bRCanId = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
 const createTMActor = async (canisterId, idl, options)=> {
     const phrase = "ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo";
@@ -48,7 +53,7 @@ const filterStats = (stats)=> {
 const _startMatch = async (externalMatchId) => {
 
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
-        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+        agentOptions: { host: host, fetch },
     });
 
     try {
@@ -81,7 +86,7 @@ const _startMatch = async (externalMatchId) => {
 
 const _endMatch = async (externalMatchId, stats) => {
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
-        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+        agentOptions: { host: host, fetch },
     });
     console.log("endMatch nodejs after Actor creation");
     console.log(bRService);
@@ -121,7 +126,7 @@ const _endMatch = async (externalMatchId, stats) => {
 
 const _matchForcedClose = async (externalMatchId, reason) => {
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
-        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+        agentOptions: { host: host, fetch },
     });
     
     turnInit = {
@@ -169,7 +174,7 @@ const _forcedExit = async (playerPrincipal, externalMatchId, reason, detail) => 
 
     var turnInit = "";
     const bRService = await createTMActor(bRCanId, IdlFactory.idlFactory, {
-        agentOptions: { host: "http://127.0.0.1:8000", fetch },
+        agentOptions: { host: host, fetch },
     });
 
     if (detail == 'Banned') {
