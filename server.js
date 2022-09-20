@@ -24,7 +24,7 @@ app.post('/startMatch', service.startMatch);
 app.post('/endMatch', service.endMatch);
 app.post('/matchForcedClose', service.matchForcedClose);
 app.post('/forcedExit', service.forcedExit);
-app.get('/test', service.test);
+// app.get('/test', service.httpReq);
 
 app.set('port', process.env.PORT || 5000);
 

@@ -2,9 +2,9 @@ const  IdlFactory = require('./IDLs/bountyRushService.did.js');
 const  Agent = require('@dfinity/agent'); 
 const  Principal = require('@dfinity/principal'); 
 const  Identity = require('./Utils/identities.js'); 
-const  fetch = require('node-fetch'); 
-const axios = require('axios');
-const fs = require("fs");
+const fetch = (...args) =>
+import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
 
 
 const bRCanId = "rrkah-fqaaa-aaaaa-aaaaq-cai";
@@ -41,106 +41,8 @@ const filterStats = (stats)=> {
 //     });
 // };
 
-const canList = [
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "yusot-paaaa-aaaaj-qallq-cai",
-        qty : 71
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zz4k5-aiaaa-aaaaj-qalma-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "z65mj-nqaaa-aaaaj-qalmq-cai",
-        qty : 71
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zx6hv-3yaaa-aaaaj-qalna-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zq7bb-waaaa-aaaaj-qalnq-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zfyqm-xiaaa-aaaaj-qaloa-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zczwy-2qaaa-aaaaj-qaloq-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zl25e-myaaa-aaaaj-qalpa-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "zm33q-baaaa-aaaaj-qalpq-cai",
-        qty : 70
-    },
-    {
-        canId : "zejmq-rqaaa-aaaah-qcnsq-cai",
-        assetCanId : "4qabv-kiaaa-aaaaj-qalqa-cai",
-        qty : 70
-    },
-];
-
-// exports.httpReq = async () => {
-//     res = await axios.get("https://zm33q-baaaa-aaaaj-qalpq-cai.raw.ic0.app/?index=50");
-//     console.log(res);
-    // var testUrl = res.data.match(/'(?<=[src="]).*(?=[\"])'/gi),
-    // var testUrl = res.data.match(/(http \d+(\.\d)*)/i),
-    // onlyUrl = testUrl && testUrl[1];
-    // var urlRegex = /(https?:\/\/[^" ]*)/;
-
-    // var input = res.data;
-    // var url = input.match(urlRegex)[1];
-    // console.log(url);
-    // fs.writeFile('./result.txt', url, function (err) {
-    //     if (err) throw err;               console.log('Results Received');
-    //   }); 
-    // let canArr = [];
-    // for ( let can of canList ) {
-    //     let i = 0;
-    //     console.log("CanId: " + can.assetCanId);
-    //     console.log("*********************************************************");
-    //     while (i < can.qty) {
-    //         // console.log("Index: " + i );
-    //         // res = await axios.get("https://" + can.assetCanId + ".raw.ic0.app/?index=" + i);
-    //         var urlRegex = /(https?:\/\/[^" ]*)/;
-    //         // console.log(res.data);        
-    //         var input = "https://" + can.assetCanId + ".raw.ic0.app/?index=" + i;
-    //         var url = input.match(urlRegex)[1];
-    //         canArr.push(url);
-    //         // console.log("status: " + res.status);
-    //         // console.log("-------------------------------");
-    //         // if (res.status != 200) {
-    //         //     console.log(res.request._currentUrl);
-    //         //     console.log("Pos: " + i);
-    //         // };
-    //         i = i + 1;
-    //     };
-        
-    //     console.log("Total assets: " + i);
-    //     console.log("*********************************************************");
-    //     console.log("End of CanId: " + can.assetCanId);
-    // };
-    // console.log(canArr.length);
-    // fs.writeFile('./result.txt', canArr.join(), function (err) {
-    //     if (err) throw err;               console.log('Results Received');
-    // }); 
-    // canList.map(async (can)=> {
-        
-    // });
+// exports.httpReq = async (req, res) => {
+//     res.send(await NFTs.getAllCollNfts("k4qsa-4aaaa-aaaah-qbvnq-cai", 100, mLuck, "simple", "Elementum: Faceted Meninas"));
 // };
 
 const _startMatch = async (externalMatchId) => {
