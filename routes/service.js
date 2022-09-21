@@ -4,6 +4,7 @@ const  Principal = require('@dfinity/principal');
 const  Identity = require('./Utils/identities.js'); 
 const fetch = (...args) =>
 import('node-fetch').then(({ default: fetch }) => fetch(...args));
+require('dotenv').config();
 
 const bRCanId = process.env.BRCANID;
 const host = process.env.NETWORK;
