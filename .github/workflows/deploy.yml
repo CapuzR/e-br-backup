@@ -21,6 +21,13 @@ jobs:
         npm install
       env:
         CI: true
+    - name: Create env file
+      run: |
+        touch .env
+        echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+        echo "BRCANID=${{ secrets.BRCANID }}" >> .env
+        echo "NETWORK=${{ secrets.NETWORK }}" >> .env
+        echo "SEEDPHRASE=${{ secrets.SEEDPHRASE }}" >> .env
     - name: Publish to Github Packages Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:

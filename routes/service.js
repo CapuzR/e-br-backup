@@ -5,17 +5,14 @@ const  Identity = require('./Utils/identities.js');
 const fetch = (...args) =>
 import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-const network =
-process.env.DFX_NETWORK ||
-(process.env.NODE_ENV === "production" ? "ic" : "local");
-const bRCanId = network != "ic" ? "rrkah-fqaaa-aaaaa-aaaaq-cai" : "x6h7n-bqaaa-aaaan-qajxq-cai";
-const host = network != "ic" ? "http://localhost:8000" : "https://mainnet.dfinity.network";
+const bRCanId = process.env.BRCANID;
+const host = process.env.NETWORK;
 
 
 // const bRCanId = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
 const createTMActor = async (canisterId, idl, options)=> {
-    const phrase = "ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo ricardo";
+    const phrase = process.env.SEEDPHRASE;
     const identity = await Identity.identityFromSeed(phrase);
     const agent = new Agent.HttpAgent({ ...options?.agentOptions, identity });
     await agent.fetchRootKey();
