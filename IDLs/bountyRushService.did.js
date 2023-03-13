@@ -2,6 +2,7 @@ exports.idlFactory = ({ IDL }) => {
   const DetailValue = IDL.Rec();
   const InitOptions = IDL.Record({
     'turnManagers' : IDL.Vec(IDL.Principal),
+    'auth' : IDL.Vec(IDL.Principal),
     'admins' : IDL.Vec(IDL.Principal),
     'allowList' : IDL.Opt(IDL.Vec(IDL.Principal)),
   });
@@ -35,9 +36,20 @@ exports.idlFactory = ({ IDL }) => {
     'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
   });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : Error });
+  const MatchSettings = IDL.Record({
+    'maxNumRounds' : IDL.Nat,
+    'fees' : IDL.Record({ 'bR' : IDL.Nat, 'network' : IDL.Nat }),
+    'matchMaxBet' : IDL.Nat,
+    'turnMinBet' : IDL.Nat,
+    'minNumRounds' : IDL.Nat,
+    'maxNumPlayers' : IDL.Nat,
+    'minNumPlayers' : IDL.Nat,
+    'matchMinBet' : IDL.Nat,
+  });
   const MatchPlayerStatus = IDL.Variant({
     'Fold' : IDL.Null,
     'Active' : IDL.Null,
+    'MatchClosed' : IDL.Null,
     'Banned' : IDL.Null,
     'Winner' : IDL.Null,
     'Looser' : IDL.Null,
@@ -164,7 +176,10 @@ exports.idlFactory = ({ IDL }) => {
   const ErrorLogType = IDL.Variant({
     'TransferToMatch' : IDL.Null,
     'PayToWinner' : IDL.Null,
+    'EPaymentMismatch' : IDL.Null,
     'UpdateInvoice' : IDL.Text,
+    'PayToElementum' : IDL.Null,
+    'CheckPayment' : IDL.Null,
   });
   const Error__1 = IDL.Variant({
     'InvalidAccount' : IDL.Text,
@@ -204,27 +219,44 @@ exports.idlFactory = ({ IDL }) => {
   const ErrorQty = IDL.Record({
     'updateInvoicePWError' : IDL.Nat,
     'transferToMatchError' : IDL.Nat,
+    'checkPaymentError' : IDL.Nat,
+    'payToElementumError' : IDL.Nat,
     'payToWinnerError' : IDL.Nat,
     'updateInvoiceTMError' : IDL.Nat,
   });
   const GroupedData = IDL.Record({
-    'matchPlayerStatsEntriesRels' : IDL.Vec(
+    'externalInternalMatchIdEntries' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'usernamePpal' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Principal)),
+    'turnManagers' : IDL.Vec(IDL.Principal),
+    'userInvoiceEntries' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
+    'auth' : IDL.Vec(IDL.Principal),
+    'assetCanisterIds' : IDL.Vec(IDL.Principal),
+    'matchSettings' : MatchSettings,
+    'matchPlayerStatsEntries' : IDL.Vec(
       IDL.Tuple(IDL.Text, IDL.Principal, MatchPlayerStats)
     ),
-    'userInvoiceEntriesRels' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
-    'activePlayerMatchesRels' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
     'matches' : IDL.Vec(IDL.Tuple(IDL.Text, Match)),
     'playerStats' : IDL.Vec(IDL.Tuple(IDL.Principal, PlayerStats__1)),
-    'matchInvoiceEntriesRels' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'admins' : IDL.Vec(IDL.Principal),
     'users' : IDL.Vec(IDL.Tuple(IDL.Principal, User)),
     'invoices' : IDL.Vec(IDL.Tuple(IDL.Text, Invoice)),
+    'allowList' : IDL.Opt(IDL.Vec(IDL.Principal)),
+    'activePlayerMatches' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
     'errorLog' : IDL.Vec(ErrorLog),
     'errorQty' : ErrorQty,
-    'externalInternalMatchIdEntriesRels' : IDL.Vec(
-      IDL.Tuple(IDL.Text, IDL.Text)
-    ),
+    'matchInvoiceEntries' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
   });
-  const Result_6 = IDL.Variant({ 'ok' : GroupedData, 'err' : Error__1 });
+  const Result_9 = IDL.Variant({ 'ok' : GroupedData, 'err' : Error__1 });
+  const Result_8 = IDL.Variant({
+    'ok' : IDL.Vec(
+      IDL.Record({
+        'invoiceId' : IDL.Text,
+        'isPaid' : IDL.Bool,
+        'amount' : IDL.Nat,
+      })
+    ),
+    'err' : Error,
+  });
   const MatchInit = IDL.Record({
     'minBet' : IDL.Nat,
     'tokenSymbol' : TokenSymbol,
@@ -264,7 +296,7 @@ exports.idlFactory = ({ IDL }) => {
       }),
     }),
   });
-  const Result_5 = IDL.Variant({
+  const Result_7 = IDL.Variant({
     'ok' : IDL.Opt(IDL.Vec(IDL.Principal)),
     'err' : Error,
   });
@@ -275,6 +307,8 @@ exports.idlFactory = ({ IDL }) => {
     'details' : IDL.Vec(IDL.Tuple(IDL.Text, DetailValue)),
     'memorySize' : IDL.Nat,
   });
+  const Result_6 = IDL.Variant({ 'ok' : ContractInfo, 'err' : Error });
+  const Result_5 = IDL.Variant({ 'ok' : IDL.Vec(ErrorLog), 'err' : Error });
   const PlayerStats = IDL.Record({
     'matchesLost' : IDL.Nat,
     'lost' : IDL.Nat,
@@ -303,7 +337,8 @@ exports.idlFactory = ({ IDL }) => {
     'addNewAdmin' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
     'addNewTurnManager' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
     'allowUsers' : IDL.Func([IDL.Vec(IDL.Principal)], [Result], []),
-    'backup' : IDL.Func([], [Result_6], []),
+    'backup' : IDL.Func([], [Result_9], []),
+    'checkPayments' : IDL.Func([], [Result_8], []),
     'createMatch' : IDL.Func([MatchInit], [Result_2], []),
     'endMatch' : IDL.Func(
         [IDL.Text, IDL.Vec(EndMatchPlayerStats), IDL.Nat],
@@ -311,9 +346,13 @@ exports.idlFactory = ({ IDL }) => {
         [],
       ),
     'forcedExit' : IDL.Func([IDL.Principal, IDL.Text, TurnInit], [Result], []),
+    'freePlayerFromMatch' : IDL.Func([IDL.Principal], [Result], []),
     'freePlayers' : IDL.Func([], [Result], []),
-    'getAllowedUsers' : IDL.Func([], [Result_5], ['query']),
-    'getContractInfo' : IDL.Func([], [ContractInfo], ['query']),
+    'freePlayersFromMatch' : IDL.Func([IDL.Text], [Result], []),
+    'getAllowedUsers' : IDL.Func([], [Result_7], ['query']),
+    'getCanisterInfo' : IDL.Func([], [ContractInfo], ['query']),
+    'getDetailedCanisterInfo' : IDL.Func([], [Result_6], []),
+    'getLogsAndClean' : IDL.Func([], [Result_5], []),
     'getPStatsOrderedByPoints' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, PlayerStats))],
@@ -338,6 +377,7 @@ exports.idlFactory = ({ IDL }) => {
 exports.init = ({ IDL }) => {
   const InitOptions = IDL.Record({
     'turnManagers' : IDL.Vec(IDL.Principal),
+    'auth' : IDL.Vec(IDL.Principal),
     'admins' : IDL.Vec(IDL.Principal),
     'allowList' : IDL.Opt(IDL.Vec(IDL.Principal)),
   });

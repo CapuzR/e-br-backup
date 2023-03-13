@@ -1,7 +1,7 @@
 var express = require('express'),
     bodyParser      = require('body-parser'),
     methodOverride  = require('method-override'),
-    service        = require('./routes/service.js'),
+    service        = require('./services/service.js'),
     app = express();
     
 var cors = require('cors')
@@ -20,14 +20,13 @@ app.use(cors());
 //     next();
 // });
 
-app.post('/startMatch', service.startMatch);
-app.post('/endMatch', service.endMatch);
-app.post('/matchForcedClose', service.matchForcedClose);
-app.post('/forcedExit', service.forcedExit);
-app.get('/test', service.test);
+app.get('/backupTest', service.backupTest);
+app.get('/readBackupText', service.readBackupText);
 
-app.set('port', process.env.PORT || 5000);
 
-app.listen(app.get('port'), function () {
-    console.log('Express server listening on port ' + app.get('port'));
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.json({ error: err });
 });
+
+module.exports = app;

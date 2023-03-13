@@ -24,12 +24,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
     "esm": "^3.2.25",
+    "mongoose": "^5.12.14",
     "express": "^4.4.5",
     "hdkey": "^2.0.1",
     "method-override": "^2.0.2"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node start.js"
   },
   "keywords": [
     "Tutorial"
